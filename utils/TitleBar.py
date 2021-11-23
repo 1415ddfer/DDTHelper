@@ -1,7 +1,9 @@
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QComboBox
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QEvent
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QComboBox, QHBoxLayout, QVBoxLayout, QDialog, QLineEdit, \
+    QListWidgetItem, QToolButton, QListWidget, QMessageBox
+
+from utils.default import *
 
 
 class TitleBar(QWidget):
@@ -10,7 +12,7 @@ class TitleBar(QWidget):
         self.df = df
         self.win = parent
         self.team = team
-        self.lay = QtWidgets.QHBoxLayout(self)
+        self.lay = QHBoxLayout(self)
         self.setLayout(self.lay)
         self.lay.setSpacing(0)
         self.lay.setContentsMargins(0, 15, 0, 0)
@@ -18,97 +20,36 @@ class TitleBar(QWidget):
         self.InitializeWindow()
 
     def init_team_menu(self):
-        team_w = QtWidgets.QHBoxLayout()
+        team_w = QHBoxLayout()
         team_w.setSpacing(5)
         team_w.setContentsMargins(0, 0, 10, 0)  # 布局无边框
 
-        self.cb = QComboBox()
+        self.cb = TeamMenu(self)
         self.setFixedHeight(self.df.TITLE_BAR_HEIGHT)
-        self.cb.setFixedSize(100, 27)
-        #  self.comboBox.setCurrentIndex(2)  # 设置默认值
-        # self.cb.setStyleSheet("background-color:#e7e1cc")
-        print(self.team)
-        self.cb.addItems(self.team)  # list
-        self.cb.addItem('添加新的队伍...')
-        self.cb.setStyleSheet('''
-                                QComboBox{
-                                    background-color:#FFFFFF;
-                                    border:1px solid gray;
-                                    width:300px;
-                                    border-radius:10px;
-                                    /* 内边框 */
-                                    padding:1px 18px 1px 20px;
-                                }
-                                /* 当下拉框打开时,背景颜色渐变 */
-                                QComboBox:!editable:on, QComboBox::drop-down:editable:on {
-                                    background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,
-                                    stop: 0 #D3D3D3, stop: 0.4 #D8D8D8,
-                                    stop: 0.5 #DDDDDD, stop: 1.0 #BBBBBB);
-                                }
-                                /* 下拉按钮 */
-                                QComboBox::drop-down {
-                                    subcontrol-origin: padding;
-                                
-                                    /* 按钮位置,右上角 */
-                                    subcontrol-position: top right;
-                                
-                                    /* 按钮宽度 */
-                                    width: 5px;
-                                
-                                
-                                    /* 倒角 */
-                                    border-top-right-radius: 3px;
-                                    border-bottom-right-radius: 3px;
-                                }
-                                QComboBox::down-arrow {
-                                    image: url(:/res/exit.png);
-                                }
+        self.cb.setFixedSize(150, 30)
+        for i in self.team:
+            self.cb.addTeam(i)
 
-                                /* 下拉按钮位移 */
-                                QComboBox::down-arrow:on {
-                                    top: 1px;
-                                    left: 1px;
-                                }
-
-                                /* 下拉列表里的颜色 */
-                                QComboBox QAbstractItemView {
-                                    border: 2px solid darkgray;
-                                    selection-background-color: green;
-                                }''')
+        self.cb_add = QToolButton(self)
+        self.cb_add.setIcon(QIcon(TITLE_ADDBTN_ICON))
+        self.cb_add.setFixedSize(16, 16)
 
         team_w.addWidget(self.cb)
-        # team_w.addWidget(teamBt)
+        team_w.addWidget(self.cb_add)
         tw = QWidget(self)
         tw.setLayout(team_w)
-        # self.cb.currentIndexChanged.connect(lambda: cb_event(self))
-        # self.cb.currentIndexChanged.connect(self.change_team)
         return tw
-
-    def build_item(self, str0):
-        w = QtWidgets.QWidget(self.cb)
-        i_img = QtWidgets.QLabel(self)
-        i_img.setPixmap(QPixmap('./res/edit.png'))
-        i_img.setFixedSize(27, 27)
-
-        i_text = QtWidgets.QLabel(self)
-        i_text.setText(str0)
-
-        i_layout = QtWidgets.QHBoxLayout(w)
-        i_layout.addWidget(i_text)
-        i_layout.addWidget(i_img)
-        return w
 
     def update_cb(self, team, i):
         self.cb.clear()
-        self.cb.addItems(team)
-        self.cb.addItem('添加新的队伍...')
+        for i in team:
+            self.cb.addTeam(i)
         self.cb.setCurrentIndex(i)
 
     def InitializeWindow(self):
         self.isPressed = False
         self.setFixedHeight(self.df.TITLE_BAR_HEIGHT)
         self.InitializeViews()
-        pass
 
     def InitializeViews(self):
         self.iconLabel = QPushButton(self)
@@ -183,70 +124,147 @@ class TitleBar(QWidget):
 
 
 class TeamMenu(QComboBox):
+    list0 = []
+    list1 = []
+
     def __init__(self, p):
         QComboBox.__init__(self, parent=p)
-        self.setUI()
+        self.m_list = QListWidget(self)
+        self.setModel(self.m_list.model())
+        self.setView(self.m_list)
 
-        pass
+        self.setQss(TITLE_COMBOBOX_QSS, self)
 
-    def buildItem(self, str0):
-        w = QtWidgets.QWidget(self)
-        i_img = QtWidgets.QLabel(self)
-        i_img.setPixmap(QPixmap('./res/edit.png'))
-        i_img.setFixedSize(27, 27)
+    update_signal = pyqtSignal(int, list)
 
-        i_text = QtWidgets.QLabel(self)
-        i_text.setText(str0)
+    @staticmethod
+    def setQss(file, control):
+        with open(file, mode='r', encoding='UTF-8') as f:
+            qss = f.read()
+            control.setStyleSheet(qss)
 
-        i_layout = QtWidgets.QHBoxLayout(w)
-        i_layout.addWidget(i_text)
-        i_layout.addWidget(i_img)
-        i_img.cl
-        return w
+    def setTeamList(self, l0):
+        self.addItems(l0)
+        for i in l0:
+            self.addTeam(i)
 
-    def setUI(self):
-        self.setStyleSheet('''
-                                        QComboBox{
-                                            background-color:#FFFFFF;
-                                            border:1px solid gray;
-                                            width:300px;
-                                            border-radius:10px;
-                                            /* 内边框 */
-                                            padding:1px 18px 1px 20px;
-                                        }
-                                        /* 当下拉框打开时,背景颜色渐变 */
-                                        QComboBox:!editable:on, QComboBox::drop-down:editable:on {
-                                            background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,
-                                            stop: 0 #D3D3D3, stop: 0.4 #D8D8D8,
-                                            stop: 0.5 #DDDDDD, stop: 1.0 #BBBBBB);
-                                        }
-                                        /* 下拉按钮 */
-                                        QComboBox::drop-down {
-                                            subcontrol-origin: padding;
+    def clearTeam(self):
+        self.m_list.clear()
+        self.list0 = []
+        self.list1 = []
 
-                                            /* 按钮位置,右上角 */
-                                            subcontrol-position: top right;
+    def addTeam(self, text):
+        self.list0.append(text)
+        item = ComboBoxItem(len(self.list0) - 1)
+        item.itemOpSignal.connect(self.editTeam)
+        _w = QListWidgetItem(self.m_list)
+        _w.setText(text)
+        self.list1.append(_w)
+        self.m_list.setItemWidget(_w, item)
 
-                                            /* 按钮宽度 */
-                                            width: 5px;
+    def editTeam(self, i):
+        inp = EditDialog(self, self.list0[i])
+        inp.res_signal.connect(self.changeTeam)
+        inp.show()
+
+    def changeTeam(self, state, str0, str1):
+        i = self.list0.index(str0)
+        if state:
+            self.update_signal.emit(2, [str0, str1])
+            self.list0[i] = str1
+            self.list1[i].setText(str1)
+        else:
+            if len(self.list0) - 1:
+                self.update_signal.emit(3, [str0])
+                self.m_list.takeItem(i)
+                del self.list0[i]
+                del self.list1[i]
+            else:
+                QMessageBox.information(self, "提示", "当只有一个队列时不可删除",
+                                        QMessageBox.Yes)
 
 
-                                            /* 倒角 */
-                                            border-top-right-radius: 3px;
-                                            border-bottom-right-radius: 3px;
-                                        }
-                                        QComboBox::down-arrow {
-                                            image: url(:/res/exit.png);
-                                        }
+class EditDialog(QDialog):
+    def __init__(self, p, name):
+        QDialog.__init__(self, p)
+        self.name = name
+        self.layout0 = QVBoxLayout(self)
 
-                                        /* 下拉按钮位移 */
-                                        QComboBox::down-arrow:on {
-                                            top: 1px;
-                                            left: 1px;
-                                        }
+        i_w = QWidget(self)
+        i_l = QHBoxLayout(i_w)
 
-                                        /* 下拉列表里的颜色 */
-                                        QComboBox QAbstractItemView {
-                                            border: 2px solid darkgray;
-                                            selection-background-color: green;
-                                        }''')
+        i_l.addWidget(QLabel('队伍名字：', self))
+
+        self.ed = QLineEdit(name, self)
+        i_l.addWidget(self.ed)
+
+        del_btn = QPushButton(self)
+        del_btn.setFixedSize(16, 16)
+        del_btn.setIcon(QIcon(TITLE_CLS_ICON))
+        del_btn.clicked.connect(self.del_data)
+        i_l.addWidget(del_btn)
+
+        m_w = QWidget(self)
+        m_l = QHBoxLayout(m_w)
+
+        btn_no = QPushButton('取消', self)
+        btn_no.clicked.connect(self.close)
+        m_l.addWidget(btn_no)
+
+        btn_yes = QPushButton('确定', self)
+        btn_yes.clicked.connect(self.upload)
+        m_l.addWidget(btn_yes)
+
+        self.layout0.addWidget(i_w)
+        self.layout0.addWidget(m_w)
+
+    res_signal = pyqtSignal(int, str, str)
+
+    def del_data(self):
+        msg = QMessageBox.warning(self, "提示", "确实要删除队伍吗?",
+                                  QMessageBox.Yes | QMessageBox.No)
+        if msg == QMessageBox.Yes:
+            self.res_signal.emit(0, self.name, None)
+            self.close()
+
+    def upload(self):
+        self.res_signal.emit(1, self.name, self.ed.text())
+        self.close()
+
+
+class ComboBoxItem(QWidget):
+    def __init__(self, index):
+        super().__init__()
+        self.cbIndex = index
+        self.layout0 = QHBoxLayout(self)
+        self.layout0.setContentsMargins(10,  # left
+                                        0,  # end
+                                        10,  # right
+                                        0)  # top
+
+        self.lb_text = QLabel(self)
+        self.bt_close = QToolButton(self)
+        self.bt_close.setIcon(QIcon(TITLE_ITEM_ICON))
+        self.bt_close.setAutoRaise(True)
+
+        self.layout0.addWidget(self.lb_text)
+        self.layout0.addWidget(self.bt_close)
+
+        # 布局内容省略
+
+        self.bt_close.installEventFilter(self)
+        self.installEventFilter(self)
+
+    itemOpSignal = pyqtSignal(int)
+
+    # 事件拦截
+    def eventFilter(self, object, event):
+        if object is self:
+            if event.type() == QEvent.Enter:
+                self.setStyleSheet("QWidget{color:white}")
+            elif event.type() == QEvent.Leave:
+                self.setStyleSheet("QWidget{color:black}")
+        elif object is self.bt_close:
+            if event.type() == QEvent.MouseButtonPress:
+                self.itemOpSignal.emit(self.cbIndex)
+        return QWidget.eventFilter(self, object, event)

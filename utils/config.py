@@ -198,7 +198,7 @@ class GetConfig:
     def create_new_team(self, name):
         if self.dbHelper is None:
             self.dbHelper = SQLHelper()
-        num = len(self.group)
+        num = int(list(self.data['group'].values())[-1][4]) + 1
         self.data['group'][name] = 'TEAM' + str(num)
         self.dbHelper.create_table('TEAM' + str(num))
         self.change_cf('login', 'group_state', name)
@@ -218,6 +218,18 @@ class GetConfig:
                 for i in range(len(self.group) - len(self.dbHelper.get_all_table())):
                     self.dbHelper.create_table('TEAM' + str(len(self.group) - 1))
                     print('创建没导入的表')
+
+    def rename_team(self, o, n):
+        self.data['group'][n] = self.data['group'].pop(o)
+        self.save_cf()
+
+    def del_team(self, o):
+        if self.dbHelper is None:
+            self.dbHelper = SQLHelper()
+        self.dbHelper.del_table(self.data['group'].pop(o))
+        self.save_cf()
+        self.dbHelper.close()
+        self.dbHelper = None
 
     def add_data(self, list0, team):
         if self.dbHelper is None:

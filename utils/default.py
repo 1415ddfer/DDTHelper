@@ -22,5 +22,8 @@ TITLE_CLS_ICON = RES_PATH + "exit.png"
 TITLE_RESTORE_ICON = RES_PATH + "restore.png"
 TITLE_SETTING_ICON = RES_PATH + "tool.jpeg"
 
+TITLE_COMBOBOX_QSS = RES_PATH + "qcombobox.qss"
+TITLE_ITEM_ICON = RES_PATH + "edit.png"
+TITLE_ADDBTN_ICON = RES_PATH + "adduser.ico"
 
 

@@ -220,7 +220,7 @@ class LoginThread(QThread):
         else:
             try:
                 post_login = login.PostLogin(self.acc)
-                if self.acc[0] == 1:  # 登陆到4399
+                if self.acc[0] == 1:  # 登录到4399
                     post_login.post_login()
                     return post_login.get_url()
 

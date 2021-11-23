@@ -41,7 +41,9 @@ class Frame(QWidget, LoadPlugin):
 
         self.title_b.cb.setCurrentIndex(self.cg.group.index(self.cg.get_group_state()))
 
-        self.title_b.cb.currentIndexChanged.connect(lambda: self.cb_event())
+        self.title_b.cb.update_signal.connect(self.cb_event)
+        self.title_b.cb.currentIndexChanged.connect(lambda: self.cb_event(0, None))
+        self.title_b.cb_add.clicked.connect(lambda: self.cb_event(1, None))
 
     def set_up(self):
         self.setFixedSize(450, 350)  # 450+50|350-20
@@ -56,23 +58,27 @@ class Frame(QWidget, LoadPlugin):
         for i in self.cg.acc:
             self.frame0.add_btn(i, list0, self)
 
-    def cb_event(self):
-        print(self.title_b.cb.currentText())
-        if self.title_b.cb.currentText() == '添加新的队伍...':
-            res, ok = QtWidgets.QInputDialog.getText(self, "新建组", "输入队伍的名字：")
-            if ok:
-                try:
-                    print(res)
-                    i = self.title_b.cb.currentIndex()
-                    self.cg.create_new_team(res)
-                    self.title_b.update_cb(self.cg.group, i)
+    def cb_event(self, state, msg):
+        match state:
+            case 3:
+                if self.title_b.cb.currentText() == msg[0]:
                     self.update_frame()
-                except Exception as e:
-                    print(e)
-            else:
-                self.title_b.cb.setCurrentIndex(self.cg.group.index(self.cg.get_group_state()))
-        else:
-            self.update_frame()
+                self.cg.del_team(msg[0])
+            case 2:
+                self.cg.rename_team(msg[0], msg[1])
+            case 1:
+                res, ok = QtWidgets.QInputDialog.getText(self, "新建组", "输入队伍的名字：")
+                if ok:
+                    print(res)
+                    self.cg.create_new_team(res)
+                    self.title_b.cb.addTeam(res)
+                    self.title_b.cb.setCurrentIndex(len(self.title_b.cb.list0) - 1)
+                    self.update_frame()
+                else:
+                    self.title_b.cb.setCurrentIndex(self.cg.group.index(self.cg.get_group_state()))
+
+            case 0:
+                self.update_frame()
 
     def show_dialog(self, data):
         from utils import showDialog
