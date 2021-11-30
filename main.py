@@ -7,7 +7,7 @@ from utils import *
 if __name__ == '__main__':
     cg = config.GetConfig()
     app = QApplication(sys.argv)
-    w = MainWindow.Frame(cg, default, TitleBar, BtnFrame)
+    w = MainWindow.Frame(cg, TitleBar, BtnFrame)
     w.show()
     app.exec_()
     cg.save_cf()

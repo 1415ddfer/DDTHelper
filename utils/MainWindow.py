@@ -1,41 +1,51 @@
 from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QMessageBox
+from PyQt5.QtCore import Qt, QRectF, QSize
+from PyQt5.QtGui import QPainterPath, QBrush, QPainter, QColor
+from PyQt5.QtWidgets import QWidget, QMessageBox, QVBoxLayout, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout
 from utils.Plugin.Loader import LoadPlugin
+from utils.default import Stylesheet
 
 
 class Frame(QWidget, LoadPlugin):
     list_btn = []
 
-    def __init__(self, c, d, t, b):
+    def __init__(self, c, t, b):
         QWidget.__init__(self)
         self.cg = c
         self.set_up()
-        self.title_b = t.TitleBar(self, 'DDTHelper', d, c.group)
+        self.title_b = t.TitleBar(self, 'DDTHelper', c.group)
         self.frame0 = b.Frame(c)
         self.init_layout()
         self.load_user()
 
+    def sizeHint(self):
+        return QSize(550, 400)
+
     def init_layout(self):
-        layout_0 = QtWidgets.QHBoxLayout(self)
-        layout_0.setSpacing(0)
-        layout_0.setContentsMargins(0, 0, 0, 0)  # 布局无边框
+        layout = QVBoxLayout(self)
+        # 重点： 这个widget作为背景和圆角
+        self.widget = QWidget(self)
+        self.widget.setObjectName('Custom_Widget')
+        layout.addWidget(self.widget)
 
         self.lgwd = LoginConfig(self.cg)
         self.lgwd.setVisible(False)
-        layout_0.addWidget(self.lgwd)
 
-        wd1 = QtWidgets.QWidget()
-        layout_1 = QtWidgets.QVBoxLayout(wd1)  # 全局竖直
-        layout_0.addWidget(wd1)
+        #
+        layout0 = QHBoxLayout(self.widget)
+        layout0.setSpacing(0)
+        layout0.setContentsMargins(0, 0, 0, 0)  # 布局无边框
 
-        self.frame0.setStyleSheet("background-color:#cdbb92")
+        layout0.addWidget(self.lgwd)
 
-        layout_1.addWidget(self.title_b)  # 四个部件加至全局布局
-        layout_1.addWidget(self.frame0)
+        main_widget = QWidget(self)
+        layout1 = QGridLayout(main_widget)
+        layout1.addWidget(self.title_b, 0, 0)
+        layout1.addWidget(self.frame0, 1, 0)
+        layout1.addItem(QSpacerItem(20, 40, QSizePolicy.Minimum,
+                                    QSizePolicy.Expanding), 2, 0)
 
-        layout_1.setSpacing(0)
-        layout_1.setContentsMargins(0, 0, 0, 0)  # 布局无边框
+        layout0.addWidget(main_widget)
 
         self.lgwd.line1.btn.clicked.connect(self.do_ontop)
 
@@ -46,10 +56,10 @@ class Frame(QWidget, LoadPlugin):
         self.title_b.cb_add.clicked.connect(lambda: self.cb_event(1, None))
 
     def set_up(self):
-        self.setFixedSize(450, 350)  # 450+50|350-20
-        self.setWindowFlags(Qt.FramelessWindowHint)  # 去除默认标题栏
-        font = QtGui.QFont()
-        font.setFamily("微软雅黑")
+        self.setObjectName('Custom_Dialog')
+        self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.setStyleSheet(Stylesheet)
 
     def load_user(self):
         self.frame0.add_user.clicked.connect(lambda: self.show_dialog(None))
@@ -118,10 +128,10 @@ class Frame(QWidget, LoadPlugin):
 
     def wd_setting(self):
         if self.lgwd.isVisible():
-            self.setFixedSize(450, 350)
+            self.setFixedSize(550, 400)
             self.lgwd.setVisible(False)
         else:
-            self.setFixedSize(650, 350)
+            self.setFixedSize(741, 400)
             self.lgwd.setVisible(True)
 
     def do_ontop(self):
@@ -144,6 +154,7 @@ class LoginConfig(QtWidgets.QWidget):
             layout0 = QtWidgets.QHBoxLayout(self)
 
             line = QtWidgets.QLabel(hint)
+            line.setStyleSheet("color: white")
             layout0.addWidget(line)
 
             self.btn = QtWidgets.QPushButton(text)
@@ -160,6 +171,7 @@ class LoginConfig(QtWidgets.QWidget):
 
             line = QtWidgets.QLabel()
             line.setText(hint)
+            line.setStyleSheet("color: red")
             self.cb = QtWidgets.QComboBox()
             self.cb.addItems(items)
             self.cb.setCurrentIndex(index)

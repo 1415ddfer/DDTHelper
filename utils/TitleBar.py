@@ -7,32 +7,33 @@ from utils.default import *
 
 
 class TitleBar(QWidget):
-    def __init__(self, parent, text, df, team):
+    def __init__(self, parent, text, team):
         super(TitleBar, self).__init__()
-        self.df = df
         self.win = parent
         self.team = team
         self.lay = QHBoxLayout(self)
         self.setLayout(self.lay)
         self.lay.setSpacing(0)
-        self.lay.setContentsMargins(0, 15, 0, 0)
+        self.setFixedHeight(30)
+        self.lay.setContentsMargins(20, 0, 20, 0)
 
         self.InitializeWindow()
 
     def init_team_menu(self):
         team_w = QHBoxLayout()
-        team_w.setSpacing(5)
-        team_w.setContentsMargins(0, 0, 10, 0)  # 布局无边框
+        team_w.setSpacing(0)
+        team_w.setContentsMargins(0, 0, 25, 0)  # 布局无边框
 
         self.cb = TeamMenu(self)
-        self.setFixedHeight(self.df.TITLE_BAR_HEIGHT)
-        self.cb.setFixedSize(150, 30)
+        self.setFixedHeight(TITLE_BAR_HEIGHT)
+        self.cb.setFixedSize(120, 30)
         for i in self.team:
             self.cb.addTeam(i)
 
         self.cb_add = QToolButton(self)
         self.cb_add.setIcon(QIcon(TITLE_ADDBTN_ICON))
-        self.cb_add.setFixedSize(16, 16)
+        self.cb_add.setIconSize(QSize(27, 27))
+        self.cb_add.setFixedSize(30, 30)
 
         team_w.addWidget(self.cb)
         team_w.addWidget(self.cb_add)
@@ -48,12 +49,12 @@ class TitleBar(QWidget):
 
     def InitializeWindow(self):
         self.isPressed = False
-        self.setFixedHeight(self.df.TITLE_BAR_HEIGHT)
+        self.setFixedHeight(TITLE_BAR_HEIGHT)
         self.InitializeViews()
 
     def InitializeViews(self):
         self.iconLabel = QPushButton(self)
-        self.iconLabel.setIcon(QIcon(self.df.TITLE_SETTING_ICON), )
+        self.iconLabel.setIcon(QIcon(TITLE_SETTING_ICON), )
         self.titleLabel = QLabel(self)
 
         tw = self.init_team_menu()
@@ -61,16 +62,16 @@ class TitleBar(QWidget):
         self.minButton = QPushButton(self)
         self.closeButton = QPushButton(self)
 
-        self.minButton.setFixedSize(self.df.TITLE_BUTTON_SIZE, self.df.TITLE_BUTTON_SIZE)
-        self.closeButton.setFixedSize(self.df.TITLE_BUTTON_SIZE, self.df.TITLE_BUTTON_SIZE)
+        self.minButton.setFixedSize(TITLE_BUTTON_SIZE, TITLE_BUTTON_SIZE)
+        self.closeButton.setFixedSize(TITLE_BUTTON_SIZE, TITLE_BUTTON_SIZE)
 
-        self.iconLabel.setFixedSize(self.df.TITLE_LABEL_SIZE, self.df.TITLE_LABEL_SIZE)
-        self.titleLabel.setFixedHeight(self.df.TITLE_LABEL_SIZE)
+        self.iconLabel.setFixedSize(TITLE_LABEL_SIZE, TITLE_LABEL_SIZE)
+        self.titleLabel.setFixedHeight(TITLE_LABEL_SIZE)
 
         self.titleLabel.setAlignment(Qt.AlignCenter)
 
-        self.minButton.setIcon(QIcon(self.df.TITLE_MIN_ICON))
-        self.closeButton.setIcon(QIcon(self.df.TITLE_CLS_ICON))
+        self.minButton.setIcon(QIcon(TITLE_MIN_ICON))
+        self.closeButton.setIcon(QIcon(TITLE_CLS_ICON))
 
         self.iconLabel.clicked.connect(self.win.wd_setting)
         self.minButton.clicked.connect(self.ShowMininizedWindow)
@@ -96,7 +97,7 @@ class TitleBar(QWidget):
 
     def SetIcon(self, pix):
         self.iconLabel.setPixmap(
-            pix.scaled(self.iconLabel.size() - QSize(self.df.TITLE_ICON_MAG, self.df.TITLE_ICON_MAG)))
+            pix.scaled(self.iconLabel.size() - QSize(TITLE_ICON_MAG, TITLE_ICON_MAG)))
 
     # def mouseDoubleClickEvent(self, event):
     #     self.ShowRestoreWindow()

@@ -4,7 +4,7 @@ from multiprocessing import Process
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor
-from PyQt5.QtWidgets import QWidget, QApplication, QPushButton, QMenu
+from PyQt5.QtWidgets import QWidget, QApplication, QPushButton, QMenu, QSpacerItem, QSizePolicy
 
 
 class BtnMenu(QMenu):
@@ -91,22 +91,39 @@ class Frame(QWidget):
         self.cf = c
 
         self.layout0 = QtWidgets.QGridLayout()
+        self.layout0.setSpacing(30)
         self.setLayout(self.layout0)
         self.set_up()
 
     def set_up(self):
         self.add_user = QtWidgets.QPushButton('添加', self)
-        self.add_user.setStyleSheet("background-color:#e7e1cc")
+        self.add_user.setStyleSheet('''
+            QPushButton{
+                background-color: #d4b4d7;
+                border: 1px solid gray;
+                border-radius: 20px;
+            }
+            QPushButton:hover { color: blue }
+            QPushButton:hover:!pressed { color: white }''')
         self.add_user.setMinimumSize(60, 60)
         self.add_user.setMaximumSize(60, 60)
         self.layout0.addWidget(self.add_user, 0, 0)
+        self.layout0.addItem(QSpacerItem(
+            40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum), 0, 5)
         # add_btn.setGeometry(QtCore.QRect(15, 15, 60, 60))
         # add_btn.clicked.connect(lambda: self.show_dialog(None))
 
     def add_btn(self, user, group, wd):
         i = len(self.list_btn) + 1
         btn = MenuButton(None, group, user, wd)
-        btn.setStyleSheet("background-color:#e7e1cc")
+        btn.setStyleSheet('''
+            QPushButton{
+                background-color: #d4b4d7;
+                border: 1px solid gray;
+                border-radius: 20px;
+            }
+            QPushButton:hover { color: blue }
+            QPushButton:hover:!pressed { color: white }''')
         btn.setFixedSize(70, 70)
         self.list_btn.append(btn)
         self.layout0.addWidget(btn, math.floor(i / 4), i % 4)
