@@ -1,10 +1,9 @@
 import math
 from multiprocessing import Process
 
-from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor
-from PyQt5.QtWidgets import QWidget, QApplication, QPushButton, QMenu, QSpacerItem, QSizePolicy
+from PyQt5.QtWidgets import QWidget, QApplication, QPushButton, QMenu, QSpacerItem, QSizePolicy, QGridLayout
 
 
 class BtnMenu(QMenu):
@@ -30,7 +29,12 @@ class MenuButton(QPushButton):
         self.acc_group = acc_group
         self.user = user
         self.wd = wd
-        self.setText(str(self.user[1]) + '-' + self.user[2])
+        server_name = ['未知', '43', '7k', '7道']
+        try:
+            server_name = server_name[self.user[0]]
+        except IndexError:
+            server_name = '未知'
+        self.setText(server_name + '-' + self.user[2])
         self.setMaximumSize(70, 70)
         self.setMinimumSize(70, 70)
         self.m_item = []
@@ -90,13 +94,14 @@ class Frame(QWidget):
         super(Frame, self).__init__()
         self.cf = c
 
-        self.layout0 = QtWidgets.QGridLayout()
-        self.layout0.setSpacing(30)
+        self.layout0 = QGridLayout()
+        self.layout0.setSpacing(40)
+        self.layout0.setContentsMargins(50, 20, 25, 0)
         self.setLayout(self.layout0)
         self.set_up()
 
     def set_up(self):
-        self.add_user = QtWidgets.QPushButton('添加', self)
+        self.add_user = QPushButton('添加', self)
         self.add_user.setStyleSheet('''
             QPushButton{
                 background-color: #d4b4d7;
@@ -134,7 +139,6 @@ class Frame(QWidget):
         QApplication.processEvents()
 
     def reload_self(self):
-        for i in range(self.layout0.count()):
-            self.layout0.itemAt(i).widget().deleteLater()
+        for i in self.list_btn:
+            i.deleteLater()
         self.list_btn = []
-        self.set_up()

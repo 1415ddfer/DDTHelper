@@ -3,15 +3,15 @@ import inspect
 import sys
 import time
 from functools import partial
-from threading import Thread
 from multiprocessing import Manager
+from threading import Thread
+
+from PyQt5.QtCore import (QThread, pyqtSignal, QObject)
+from PyQt5.QtGui import (QIcon)
+from PyQt5.QtWidgets import (QApplication, QMessageBox, QAction)
 
 from utils.game import *
 from utils.game.default import *
-
-from PyQt5.QtCore import (QThread, pyqtSignal, QObject)
-from PyQt5.QtWidgets import (QApplication, QMessageBox, QAction)
-from PyQt5.QtGui import (QIcon, QKeyEvent)
 
 
 class Main_(QObject):
@@ -207,32 +207,31 @@ class LoginThread(QThread):
         self.url_signal.emit(0, None)
 
     def login_(self):
-        # def login_chrome(acc):
-        #     chrome = login.Browser(acc)
-        #     if acc[0] == 1:
-        #         return chrome.do4933()
-        #     elif acc[0] == 2:
-        #         return chrome.do7k7k()
-
         if self.cf[0] == 2:
             self.login_qweb()
             return 0
         else:
             try:
                 post_login = login.PostLogin(self.acc)
-                if self.acc[0] == 1:  # 登录到4399
-                    post_login.post_login()
-                    return post_login.get_url()
+                match self.acc[0]:
+                    case 1:  # 登陆到4399
+                        post_login.post_login()
+                        return post_login.get_url()
 
-                elif self.acc[0] == 2:  # 登陆到7k7k
-                    post_login.post_login_7k()
-                    return post_login.get_url_7k()
+                    case 2:  # 登陆到7k7k
+                        post_login.post_login_7k()
+                        return post_login.get_url_7k()
 
-            except AttributeError:
+                    case 3:  # 登陆到7道
+                        self.login_qweb()
+                        return 0
+
+            except AttributeError as e:
                 print('post登陆失败')
+                print(e)
                 self.login_qweb()
                 return 0
             except login.requests.exceptions.ConnectionError:
                 print('当前没有网络连接')
                 QMessageBox.critical(None, '错误', '当前没有网络连接', QMessageBox.Yes, QMessageBox.Yes)
-                return None
+                return 0

@@ -1,7 +1,7 @@
-from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtCore import Qt, QRectF, QSize
-from PyQt5.QtGui import QPainterPath, QBrush, QPainter, QColor
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import QWidget, QMessageBox, QVBoxLayout, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout
+
 from utils.Plugin.Loader import LoadPlugin
 from utils.default import Stylesheet
 
@@ -121,10 +121,7 @@ class Frame(QWidget, LoadPlugin):
         data = self.title_b.cb.currentText()
         self.cg.init_team(data)
         self.frame0.reload_self()
-        try:
-            self.load_user()
-        except Exception as e:
-            print(e)
+        self.load_user()
 
     def wd_setting(self):
         if self.lgwd.isVisible():

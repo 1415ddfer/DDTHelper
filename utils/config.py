@@ -58,7 +58,6 @@ class SQLHelper:
                       + table + \
                       " (SERVER_NAME,SERVER_ID,DIY_NAME,USER,PASS_WORLD) VALUES (?,?,?,?,?)"
         self.c.execute(str_command, (acc[0], acc[1], acc[2], acc[3], acc[4]))
-        print('aaa')
 
     def del_user(self, group, user):
         str_command = '''
@@ -240,7 +239,11 @@ class GetConfig:
             self.dbHelper.add_user(team, list0)
 
     def del_user(self, user):
+        if self.dbHelper is None:
+            self.dbHelper = SQLHelper()
         self.dbHelper.del_user(self.data['group'][str(self.get_group_state())], user[3])
 
     def rewrite_data(self, res, user):
+        if self.dbHelper is None:
+            self.dbHelper = SQLHelper()
         self.dbHelper.update_user(self.data['group'][str(self.get_group_state())], res, user)

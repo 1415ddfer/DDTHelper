@@ -1,13 +1,12 @@
 import time
 
-import requests
 from bs4 import BeautifulSoup
-from selenium import webdriver
+from requests import Session
 
 from utils.game.default import *
 
 
-class PostLogin(requests.Session):
+class PostLogin(Session):
     def __init__(self, acc):
         super().__init__()
         self.acc = acc
@@ -40,75 +39,3 @@ class PostLogin(requests.Session):
         res3 = self.get(iframe_src, headers=POST_HEADER)
         soup = BeautifulSoup(res3.content, 'lxml')
         return GAME_4399(SId, soup.select_one("#\\37 road-ddt-game > embed").attrs["src"])
-
-
-# 模拟登陆方案
-class Browser(webdriver.Chrome):
-    def __init__(self, account):
-        self.has_true = False
-        self.account = account
-        super().__init__(executable_path='./plugin/chromedriver')
-
-    def do7k7k(self):
-        self.get(SERVER_7K7K(self.account[1]))
-        try:
-            self.find_element_by_id('username').send_keys(self.account[3])
-        except:
-            time.sleep(10)
-            return
-        self.find_element_by_id('password').send_keys(self.account[4])
-        print(self.find_element_by_id('password').submit())
-        for i in range(0, 100):
-            time.sleep(0.5)
-            if self.isElementExist('iframepage'):
-                self.has_true = True
-                break
-        if self.has_true:
-            iframe = self.find_element_by_id('iframepage')
-            # //*[@id="iframepage"]
-            # 切换嵌套的页面
-            print(iframe.get_attribute("src"))
-            self.switch_to.frame(iframe)
-            self.flash = self.find_element_by_xpath('//*[@id="7road-ddt-game"]/embed')
-            self.url = self.flash.get_attribute('src')
-            print(self.url)
-        self.quit()
-        if self.has_true:
-            return self.url
-
-    def do4933(self):
-        self.get(SERVER_4399(self.account[1]))
-        try:
-            self.find_element_by_id('s_user').send_keys(self.account[3])
-        except:
-            time.sleep(10)
-            return
-        self.find_element_by_id('s_password').send_keys(self.account[4])
-        print(self.find_element_by_id('s_password').submit())
-        for i in range(0, 100):
-            time.sleep(0.5)
-            if self.isElementExist('game_box'):
-                self.has_true = True
-                break
-        if self.has_true:
-            iframe = self.find_element_by_id('game_box')
-            # //*[@id="game_box"]
-            # //*[@id="iframepage"]
-            # 切换嵌套的页面
-            print(iframe.get_attribute("src"))
-            self.switch_to.frame(iframe)
-            self.flash = self.find_element_by_xpath('//*[@id="7road-ddt-game"]/embed')
-            self.url = self.flash.get_attribute('src')
-            print(self.url)
-        self.quit()
-        if self.has_true:
-            return self.url
-
-    def isElementExist(self, element):
-        flag = True
-        try:
-            self.find_element_by_id(element)
-            return flag
-        except:
-            flag = False
-            return flag

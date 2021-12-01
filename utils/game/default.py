@@ -48,6 +48,9 @@ def SERVER_4399(s_id):
 def SERVER_7K7K(s_id):
     return "http://web.7k7k.com/games/togame.php?target=ddt_7&server_id=" + str(s_id)
 
+def SERVER_7ROAD(s_id):
+    return "http://www.wan.com/game/play/id/" + str(226 + s_id) + ".html"
+
 
 def GAME_4399(s_id, data):
     return 'http://' + str(s_id) + '.ddt.qq933.com/' + data
@@ -55,3 +58,6 @@ def GAME_4399(s_id, data):
 
 def GAME_7K7K(s_id, data):
     return 'http://s' + str(s_id) + '.ddt.youxi567.com/' + data
+
+def GAME_7ROAD(s_id, data):
+    return 'http://s' + str(s_id) + '.ddt.7road.net/' + data
