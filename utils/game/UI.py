@@ -4,11 +4,10 @@ import time
 import win32gui
 import win32process
 from PyQt5.QAxContainer import QAxWidget
-
-from PyQt5.QtCore import QProcess, QUrl, pyqtSignal
+from PyQt5.QtCore import QUrl, pyqtSignal
 from PyQt5.QtGui import QWindow, QIcon
-from PyQt5.QtWidgets import QMessageBox, QWidget, QMainWindow, QHBoxLayout, QMenu, QActionGroup, QAction
 from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWidgets import QMessageBox, QWidget, QMainWindow, QHBoxLayout, QMenu, QActionGroup, QAction
 
 from utils.game.default import *
 
@@ -20,7 +19,6 @@ class GameUI(QMainWindow):
 
     def __init__(self, title, icon):
         super(GameUI, self).__init__()
-        self.p = QProcess(self)
         self.has_out_tis = False
 
         self.resize(1000, 623)
@@ -91,18 +89,19 @@ class GameUI(QMainWindow):
             self.web.clear_all()
             self.web.deleteLater()
         if s:
-            self.p.start('plugin\\flashplayer_sa.exe', [url])
-            self.p.waitForFinished(500)
-            subPid = self.p.processId()
+            subPid = self.startSA(url)
             print(subPid)
-            while True:
-                time.sleep(0.2)
-                hwnd = self.pid2hwnd(str(subPid), 'ShockwaveFlash', 'flashplayer_sa')
-                if hwnd:
-                    break
-            window = QWidget.createWindowContainer(QWindow.fromWinId(hwnd))
-            window.resize(1000, 600)
-            self.layout0.addWidget(window)
+            if subPid.isdigit():
+                while True:
+                    time.sleep(0.2)
+                    hwnd = self.pid2hwnd(str(subPid), 'ShockwaveFlash', 'flashplayer_sa')
+                    if hwnd:
+                        break
+                window = QWidget.createWindowContainer(QWindow.fromWinId(hwnd))
+                window.resize(1000, 600)
+                self.layout0.addWidget(window)
+            else:
+                print('启动错误')
         else:
             self.flash_con = QAxWidget()
             self.layout0.addWidget(self.flash_con)
@@ -113,8 +112,8 @@ class GameUI(QMainWindow):
 
     @staticmethod
     def startSA(url):
-        str0 = "(start-process -FilePath flashplayer_sa.exe -ArgumentList " + url + " -PassThru).id"
-        return os.popen(str0).read()
+        str0 = '''PowerShell -Command (start-process -FilePath 'plugin\\flashplayer_sa.exe' -ArgumentList """''' + url + '''""" -windowstyle Minimized -PassThru).id'''
+        return os.popen(str0).read().replace('\n', '').replace('\r', '')
 
     @staticmethod
     def pid2hwnd(p, c, t):
@@ -127,13 +126,12 @@ class GameUI(QMainWindow):
 
         hwnd_list = []
         win32gui.EnumWindows(get_all_hwnd, 0)
-        print(hwnd_list)
         if not hwnd_list:
             return 0
         str0 = '''wmic process where (name like '%%''' + t + '''%%')get processid /value'''
         res = os.popen(str0).read()
+        print('输出：' + res.replace('\n', '').replace('\r', ''))
         a = 0
-        print(res)
         for i in res.split('\n'):
             if i is not None and i != '':
                 if a:
@@ -141,10 +139,8 @@ class GameUI(QMainWindow):
                     break
                 if i == 'ProcessId=' + p:
                     a = 1
-        print(a)
         if a == 1:
             a = int(p)
-        print(a)
         for i in hwnd_list:
             if win32process.GetWindowThreadProcessId(i)[1] == a:
                 return i
@@ -208,15 +204,9 @@ class _Browser(QWebEngineView):
 
     def stop_alert(self):
         js = '''
-        var WinAlerts = window.alert;
-        window.alert = function (e) {
-        if (e != null && e.indexOf("提示内容")>-1)
-        {
-            //和谐了
-        }else{
-            WinAlerts (e);
-        }
-        };'''
+        window.alert = function() {
+            return false;
+        }'''
         self.page().runJavaScript(js)
 
     def call_back(self, res):

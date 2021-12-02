@@ -1,13 +1,13 @@
-from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtWidgets import QWidget, QMessageBox, QVBoxLayout, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QMessageBox, QVBoxLayout, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, \
+    QLabel, QPushButton, QInputDialog, QComboBox
 
-from utils.Plugin.Loader import LoadPlugin
 from utils.default import Stylesheet
 
 
-class Frame(QWidget, LoadPlugin):
+class Frame(QWidget):
     list_btn = []
+    plugin_dic = None
 
     def __init__(self, c, t, b):
         QWidget.__init__(self)
@@ -77,7 +77,7 @@ class Frame(QWidget, LoadPlugin):
             case 2:
                 self.cg.rename_team(msg[0], msg[1])
             case 1:
-                res, ok = QtWidgets.QInputDialog.getText(self, "新建组", "输入队伍的名字：")
+                res, ok = QInputDialog.getText(self, "新建组", "输入队伍的名字：")
                 if ok:
                     print(res)
                     self.cg.create_new_team(res)
@@ -101,8 +101,7 @@ class Frame(QWidget, LoadPlugin):
             self.update_frame()
 
     def moveto_other_team(self, user, team):
-        team = team.text()
-        print(team)
+        team = self.cg.data['group'][team]
         td = QMessageBox.warning(self, "提示", "确实要移动吗?",
                                  QMessageBox.Yes | QMessageBox.No)
         if td == QMessageBox.Yes:
@@ -143,33 +142,33 @@ class Frame(QWidget, LoadPlugin):
             self.setVisible(True)
 
 
-class LoginConfig(QtWidgets.QWidget):
-    class HintButton(QtWidgets.QWidget):
+class LoginConfig(QWidget):
+    class HintButton(QWidget):
         def __init__(self, hint, text):
             super().__init__()
 
-            layout0 = QtWidgets.QHBoxLayout(self)
+            layout0 = QHBoxLayout(self)
 
-            line = QtWidgets.QLabel(hint)
+            line = QLabel(hint)
             line.setStyleSheet("color: white")
             layout0.addWidget(line)
 
-            self.btn = QtWidgets.QPushButton(text)
+            self.btn = QPushButton(text)
             layout0.addWidget(self.btn)
 
             # spacer = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
             # layout0.addItem(spacer)
 
-    class HintComboBox(QtWidgets.QWidget):
+    class HintComboBox(QWidget):
         def __init__(self, hint, items, index=0):
             super().__init__()
 
-            layout0 = QtWidgets.QHBoxLayout(self)
+            layout0 = QHBoxLayout(self)
 
-            line = QtWidgets.QLabel()
+            line = QLabel()
             line.setText(hint)
             line.setStyleSheet("color: red")
-            self.cb = QtWidgets.QComboBox()
+            self.cb = QComboBox()
             self.cb.addItems(items)
             self.cb.setCurrentIndex(index)
 
@@ -182,14 +181,14 @@ class LoginConfig(QtWidgets.QWidget):
     def __init__(self, cg):
         super().__init__()
         self.setFixedWidth(200)
-        layout0 = QtWidgets.QVBoxLayout(self)
+        layout0 = QVBoxLayout(self)
         self.cg = cg
 
         self.line1 = self.HintButton('窗口置顶：', '否')
         self.line2 = self.HintButton('静音模启动：', '否')
         self.line3 = self.HintComboBox('游戏引擎：', ['本地', '兼容', '帮助..'], cg.data["flash"]["mode"])
         self.line4 = self.HintComboBox('游戏窗口大小:', ['默认', '小窗口', '全屏'])
-        self.line5 = QtWidgets.QPushButton('全局设置', self)
+        self.line5 = QPushButton('全局设置', self)
 
         layout0.addWidget(self.line1)
         layout0.addWidget(self.line2)

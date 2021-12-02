@@ -58,7 +58,7 @@ class MenuButton(QPushButton):
         self.m_group = self.contextMenu.addMenu("移动到分组")
         for i in self.acc_group:
             self.m_item.append(self.m_group.addAction(i))
-            self.m_item[-1].triggered.connect(lambda: self.wd.moveto_other_team(self.user, 'team'))
+            self.m_item[-1].triggered.connect(lambda: self.wd.moveto_other_team(self.user, i))
         # 事件绑定
         self.m_edit.triggered.connect(lambda: self.wd.show_dialog(self.user))
         self.m_del.triggered.connect(lambda: self.wd.del_data(self.user))
