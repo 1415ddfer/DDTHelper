@@ -1,3 +1,9 @@
+# tis 提示
+
+This branch is deprecated, maybe you want to take [this new version](https://github.com/1415ddfer/ZeroHelper) with c++
+
+这个分支将不再更新，请到[这个新仓库](https://github.com/1415ddfer/ZeroHelper) 获取新版本
+
 # DDTHelper
 A Simpel DDT Launcher
 
